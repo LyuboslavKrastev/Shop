@@ -1,0 +1,30 @@
+<nav class="navbar navbar-default">
+  <div class="containter-fluid">
+    <div class="navbar-header">
+      <a href="#" class="navbar-brand">Shop</a>
+    </div>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li>
+          <a href="#" (click)="onSelect('shopping-list')">Shopping list</a>
+        </li>
+        <li><a href="#" (click)="onSelect('recipe')">Recpies</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown" appDropdown>
+          <a href="#" class="dropdown-toggle" role="button"
+            >Options <span class="caret"></span
+          ></a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="#">Save</a>
+            </li>
+            <li>
+              <a href="#">Fetch</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
