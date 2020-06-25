@@ -7,7 +7,7 @@ import { Recipe } from './../recipes/recipe.model';
 @Injectable()
 export class RecipeService {
   recipesModified = new Subject<Recipe[]>();
-  private recipes: Recipe[];
+  private recipes: Recipe[] = [];
 
   // private recipes: Recipe[] = [
   //   new Recipe(
