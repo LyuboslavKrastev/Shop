@@ -8,6 +8,8 @@ import { Component } from '@angular/core';
 })
 export class AuthComponent {
   inLoginMode = true;
+  isLoading = false;
+  errorMessage: string = null;
 
   constructor(private authService: AuthService) { }
 
@@ -22,14 +24,18 @@ export class AuthComponent {
     const email = form.value.email;
     const password = form.value.password;
 
+    this.isLoading = true;
     if (this.inLoginMode) {
 
     } else {
 
       this.authService.signUp(email, password).subscribe(responseData => {
         console.log(responseData);
-      }, error => {
-        console.log(error);
+        this.isLoading = false;
+      }, errorMessage => {
+        this.errorMessage = errorMessage;
+
+        this.isLoading = false;
       });
     }
 
