@@ -8,12 +8,20 @@
         <li routerLinkActive="active">
           <a [routerLink]="['/shopping-list']">Shopping list</a>
         </li>
-        <li routerLinkActive="active">
+        <li routerLinkActive="active" *ngIf="isAuthenticated">
           <a style="cursor: pointer;" [routerLink]="['/recipes']">Recpies</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li class="dropdown" appDropdown>
+        <li *ngIf="isAuthenticated">
+          <a
+            style="cursor: pointer;"
+            *ngIf="isAuthenticated"
+            (click)="onLogout()"
+            >Logout</a
+          >
+        </li>
+        <li class="dropdown" appDropdown *ngIf="isAuthenticated">
           <a style="cursor: pointer;" class="dropdown-toggle" role="button"
             >Options <span class="caret"></span
           ></a>
@@ -26,7 +34,7 @@
             </li>
           </ul>
         </li>
-        <li routerLinkActive="active">
+        <li routerLinkActive="active" *ngIf="!isAuthenticated">
           <a style="cursor: pointer;" [routerLink]="['/auth']">Authenticate</a>
         </li>
       </ul>

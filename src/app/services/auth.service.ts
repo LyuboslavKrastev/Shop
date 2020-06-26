@@ -1,8 +1,9 @@
+import { Router } from '@angular/router';
 import { User } from './../auth/models/user.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, tap } from 'rxjs/operators';
-import { throwError, Subject } from 'rxjs';
+import { throwError, BehaviorSubject } from 'rxjs';
 import { SignUpEndpoint, SignInEndpoint } from '../secrets/db-endpoints-store.js';
 
 export interface AuthResponseData {
@@ -18,9 +19,10 @@ export interface AuthResponseData {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  userSubject = new Subject<User>();
+  userSubject = new BehaviorSubject<User>(null);
+  token: string = null;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   signUp(email: string, password: string) {
     return this.http.post<AuthResponseData>(SignUpEndpoint, {
@@ -44,6 +46,12 @@ export class AuthService {
       tap(responseData => {
         this.handleAuthentication(responseData.email, responseData.localId, responseData.idToken, +responseData.expiresIn);
       }));
+  }
+
+  // May need to call this in places other than just the header component, therefore the navigation will be handled here
+  logout() {
+    this.userSubject.next(null);
+    this.router.navigate(['./auth']);
   }
 
   private handleError(errorResponse: HttpErrorResponse) {
