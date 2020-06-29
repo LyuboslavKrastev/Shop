@@ -1,12 +1,11 @@
+<ng-template appPlaceholder></ng-template>
 <div class="row">
   <div class="col-xs-12 col-md-6 col-md-offset-3">
     <h1 class="text-center">
       {{ inLoginMode ? "Login" : "Sign Up" }}
     </h1>
     <hr />
-    <div class="alert alert-danger" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
+    <!-- <app-alert [message]="errorMessage" *ngIf="errorMessage" (close)="onHandleError()"></app-alert> -->
     <div *ngIf="isLoading" style="text-align: center;">
       <app-loading-spinner></app-loading-spinner>
     </div>

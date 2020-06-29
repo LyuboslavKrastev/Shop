@@ -4,7 +4,10 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, tap } from 'rxjs/operators';
 import { throwError, BehaviorSubject } from 'rxjs';
-import { SignUpEndpoint, SignInEndpoint } from '../secrets/db-endpoints-store.js';
+import {
+  SignUpEndpoint,
+  SignInEndpoint,
+} from '../secrets/db-endpoints-store.js';
 
 export interface AuthResponseData {
   kind: string;
@@ -22,49 +25,72 @@ export class AuthService {
   userSubject = new BehaviorSubject<User>(null);
   token: string = null;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router) {}
 
   signUp(email: string, password: string) {
-    return this.http.post<AuthResponseData>(SignUpEndpoint, {
-      email,
-      password,
-      returnSecureToken: true // Whether or not to return an ID and refresh token. Should always be true.
-    }).pipe(
-      catchError(this.handleError),
-      tap(responseData => {
-        this.handleAuthentication(responseData.email, responseData.localId, responseData.idToken, +responseData.expiresIn);
-      }));
+    return this.http
+      .post<AuthResponseData>(SignUpEndpoint, {
+        email,
+        password,
+        returnSecureToken: true, // Whether or not to return an ID and refresh token. Should always be true.
+      })
+      .pipe(
+        catchError(this.handleError),
+        tap((responseData) => {
+          this.handleAuthentication(
+            responseData.email,
+            responseData.localId,
+            responseData.idToken,
+            +responseData.expiresIn
+          );
+        })
+      );
   }
 
   logIn(email: string, password: string) {
-    return this.http.post<AuthResponseData>(SignInEndpoint, {
-      email,
-      password,
-      returnSecureToken: true
-    }).pipe(
-      catchError(this.handleError),
-      tap(responseData => {
-        this.handleAuthentication(responseData.email, responseData.localId, responseData.idToken, +responseData.expiresIn);
-      }));
+    return this.http
+      .post<AuthResponseData>(SignInEndpoint, {
+        email,
+        password,
+        returnSecureToken: true,
+      })
+      .pipe(
+        catchError(this.handleError),
+        tap((responseData) => {
+          this.handleAuthentication(
+            responseData.email,
+            responseData.localId,
+            responseData.idToken,
+            +responseData.expiresIn
+          );
+        })
+      );
   }
 
   autoLogin() {
     const userData: {
-      email: string,
-      id: string,
-      _token: string,
-      _tokenExpirationDate: string
+      email: string;
+      id: string;
+      _token: string;
+      _tokenExpirationDate: string;
     } = JSON.parse(localStorage.getItem('userData'));
 
     if (!userData) {
       return;
     }
 
-    const user = new User(userData.id, userData.email, userData._token, new Date(userData._tokenExpirationDate));
+    const user = new User(
+      userData.id,
+      userData.email,
+      userData._token,
+      new Date(userData._tokenExpirationDate)
+    );
 
     if (user.token) {
       this.userSubject.next(user);
-      const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime(); // in ms
+      const expirationDuration =
+        new Date(userData._tokenExpirationDate).getTime() -
+        new Date().getTime(); // in ms
       this.autoLogout(expirationDuration);
     }
   }
@@ -103,6 +129,10 @@ export class AuthService {
         case 'EMAIL_NOT_FOUND':
           errorMessage = 'Invalid email or password.';
           break;
+        case 'TOO_MANY_ATTEMPTS_TRY_LATER : Too many unsuccessful login attempts. Please try again later.':
+          errorMessage =
+            'Too many unsuccessful login attempts.Please try again later.';
+          break;
         default:
           break;
       }
@@ -111,7 +141,12 @@ export class AuthService {
     return throwError(errorMessage);
   }
 
-  private handleAuthentication(email: string, userId: string, token: string, expiresIn: number) {
+  private handleAuthentication(
+    email: string,
+    userId: string,
+    token: string,
+    expiresIn: number
+  ) {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     const user = new User(email, userId, token, expirationDate);
 

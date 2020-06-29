@@ -1,3 +1,5 @@
+import { PlaceholderDirective } from './../common/placeholder/placeholder.directive';
+import { AlertComponent } from '../common/alert/alert.component';
 import { AuthInterceptorService } from './services/auth.interceptor.service';
 import { LoadingSpinnerComponent } from './../common/loading-spinner/loading-spinner.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -34,9 +36,11 @@ import { AuthComponent } from './auth/auth.component';
     ShoppingEditComponent,
     LoadingSpinnerComponent,
     DropdownDirective,
+    PlaceholderDirective,
     RecipePlaceholderComponent,
     RecipeEditComponent,
-    AuthComponent
+    AuthComponent,
+    AlertComponent
   ],
   imports: [
     BrowserModule,
@@ -46,6 +50,9 @@ import { AuthComponent } from './auth/auth.component';
     AppRoutingModule
   ],
   providers: [ShoppingListService, RecipeService, { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true }],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    AlertComponent
+  ]
 })
 export class AppModule { }
