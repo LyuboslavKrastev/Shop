@@ -25,7 +25,7 @@ export class AuthService {
   userSubject = new BehaviorSubject<User>(null);
   token: string = null;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
   signUp(email: string, password: string) {
     return this.http
