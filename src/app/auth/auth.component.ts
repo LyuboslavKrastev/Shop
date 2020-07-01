@@ -1,4 +1,4 @@
-import { PlaceholderDirective } from './../../common/placeholder/placeholder.directive';
+import { PlaceholderDirective } from '../common/placeholder/placeholder.directive';
 import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { AuthService, AuthResponseData } from './../services/auth.service';
@@ -9,7 +9,7 @@ import {
   ViewChild,
   OnDestroy,
 } from '@angular/core';
-import { AlertComponent } from '../../common/alert/alert.component';
+import { AlertComponent } from '../common/alert/alert.component';
 
 @Component({
   selector: 'app-auth',
@@ -27,7 +27,7 @@ export class AuthComponent implements OnDestroy {
     private authService: AuthService,
     private router: Router,
     private componentFactoryResolver: ComponentFactoryResolver
-  ) {}
+  ) { }
 
   onModeToggle() {
     this.inLoginMode = !this.inLoginMode;

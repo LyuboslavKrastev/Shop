@@ -1,4 +1,4 @@
-import { Ingredient } from './../../common/ingredient.model';
+import { Ingredient } from '../common/ingredient.model';
 import { Subject } from 'rxjs';
 
 export class ShoppingListService {
