@@ -11,11 +11,7 @@ export interface AppState {
 }
 
 const initialState: State = {
-  ingredients: [
-    new Ingredient('Cheese', 1),
-    new Ingredient('Tomatoes', 5),
-  ]
-  ,
+  ingredients: [new Ingredient('Cheese', 1), new Ingredient('Tomatoes', 5)],
   editedIngredient: null,
   editedIngredientIndex: -1
 };
@@ -36,25 +32,43 @@ export function shoppingListReducer(state: State = initialState, action: Shoppin
         ingredients: [...state.ingredients, ...action.payload]
       };
     case ShoppingListActions.UPDATE_INGREDIENT:
-      const ingredient = state.ingredients[action.payload.index];
+      const ingredient = state.ingredients[state.editedIngredientIndex];
       const updatedIngredient = {
         ...ingredient,
-        ...action.payload.ingredient // overwrites everything
+        ...action.payload // overwrites everything
       };
 
       const updatedIngredients = [...state.ingredients];
-      updatedIngredients[action.payload.index] = updatedIngredient;
+      updatedIngredients[state.editedIngredientIndex] = updatedIngredient;
 
       return {
         ...state,
-        ingredients: updatedIngredients
+        ingredients: updatedIngredients,
+        editedIngredientIndex: -1,
+        editedIngredient: null
       };
     case ShoppingListActions.DELETE_INGREDIENT:
+      console.log(`Deleting ingredient ${state.editedIngredientIndex}`);
       return {
         ...state,
         ingredients: state.ingredients.filter((ig, index) => {
-          return index !== action.payload;
-        }) // filter always returns a new array
+          return index !== state.editedIngredientIndex;
+        }), // filter always returns a new array
+        editedIngredientIndex: -1,
+        editedIngredient: null
+      };
+    case ShoppingListActions.START_EDIT:
+      return {
+        ...state,
+        editedIngredientIndex: action.payload,
+        editedIngredient: { ...state.ingredients[action.payload] } // copy into a new object
+      };
+    case ShoppingListActions.STOP_EDIT:
+      console.log('calling stop edit');
+      return {
+        ...state,
+        editedIngredient: null,
+        editedIngredientIndex: -1
       };
     default:
       return state;

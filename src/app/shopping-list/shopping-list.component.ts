@@ -5,15 +5,15 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import * as fromShoppingList from './store/shopping-list.reducer';
+import * as ShoppingListActions from './store/shopping-list.actions';
 
 @Component({
   selector: 'app-shopping-list',
   templateUrl: './shopping-list.component.html',
   styleUrls: ['./shopping-list.component.css'],
 })
-export class ShoppingListComponent implements OnInit, OnDestroy {
+export class ShoppingListComponent implements OnInit {
   ingredients: Observable<{ ingredients: Ingredient[] }>;
-  // private shoppingSub: Subscription;
 
   constructor(
     private shoppingListService: ShoppingListService,
@@ -28,10 +28,7 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
   }
 
   onEditItem(index: number) {
-    this.shoppingListService.triggeredEditting.next(index);
-  }
-
-  ngOnDestroy(): void {
-    // this.shoppingSub.unsubscribe();
+    console.log('index:' + index)
+    this.store.dispatch(new ShoppingListActions.StartEdit(index));
   }
 }
