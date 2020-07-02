@@ -1,6 +1,5 @@
 import { Store } from '@ngrx/store';
 import { Subject } from 'rxjs';
-import { ShoppingListService } from './shopping-list.service';
 import { Ingredient } from '../common/ingredient.model';
 import { Injectable } from '@angular/core';
 import { Recipe } from './../recipes/recipe.model';
@@ -12,7 +11,7 @@ export class RecipeService {
   recipesModified = new Subject<Recipe[]>();
   private recipes: Recipe[] = [];
 
-  constructor(private shoppingListService: ShoppingListService, private store: Store<fromShoppingList.AppState>) { }
+  constructor(private store: Store<fromShoppingList.AppState>) { }
 
   getRecipes() {
     return this.recipes.slice(); // return a copy of the array

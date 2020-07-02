@@ -1,6 +1,5 @@
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
-import { ShoppingListService } from './../../services/shopping-list.service';
 import { Ingredient } from '../../common/ingredient.model';
 import {
   Component,
