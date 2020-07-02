@@ -4,14 +4,14 @@ import { Ingredient } from '../common/ingredient.model';
 import { Injectable } from '@angular/core';
 import { Recipe } from './../recipes/recipe.model';
 import * as ShoppingListActions from '../shopping-list/store/shopping-list.actions';
-import * as fromShoppingList from '../shopping-list/store/shopping-list.reducer';
+import * as fromAuth from '../store/app.reducer';
 
 @Injectable()
 export class RecipeService {
   recipesModified = new Subject<Recipe[]>();
   private recipes: Recipe[] = [];
 
-  constructor(private store: Store<fromShoppingList.AppState>) { }
+  constructor(private store: Store<fromAuth.AppState>) { }
 
   getRecipes() {
     return this.recipes.slice(); // return a copy of the array

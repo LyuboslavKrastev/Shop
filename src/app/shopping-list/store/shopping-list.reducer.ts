@@ -6,9 +6,6 @@ export interface State {
   editedIngredient: Ingredient;
   editedIngredientIndex: number;
 }
-export interface AppState {
-  shoppingList: State;
-}
 
 const initialState: State = {
   ingredients: [new Ingredient('Cheese', 1), new Ingredient('Tomatoes', 5)],
