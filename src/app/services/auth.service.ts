@@ -1,3 +1,4 @@
+import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 import { User } from './../auth/models/user.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -8,6 +9,8 @@ import {
   SignUpEndpoint,
   SignInEndpoint,
 } from '../secrets/db-endpoints-store.js';
+import * as fromApp from '../store/app.reducer';
+import * as AuthActions from '../auth/store/auth.actions';
 
 export interface AuthResponseData {
   kind: string;
@@ -22,10 +25,13 @@ export interface AuthResponseData {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private tokenExpirationTimer: any;
-  userSubject = new BehaviorSubject<User>(null);
+  // userSubject = new BehaviorSubject<User>(null);
   token: string = null;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private store: Store<fromApp.AppState>) { }
 
   signUp(email: string, password: string) {
     return this.http
@@ -78,26 +84,29 @@ export class AuthService {
     if (!userData) {
       return;
     }
-
+    const expirationDate = new Date(userData._tokenExpirationDate);
     const user = new User(
       userData.id,
       userData.email,
       userData._token,
-      new Date(userData._tokenExpirationDate)
+      expirationDate
     );
 
     if (user.token) {
-      this.userSubject.next(user);
-      const expirationDuration =
-        new Date(userData._tokenExpirationDate).getTime() -
-        new Date().getTime(); // in ms
+      // this.userSubject.next(user);
+      this.store
+        .dispatch(
+          new AuthActions.Login({ email: user.email, userId: user.id, token: user.token, expirationDate })
+        );
+      const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime(); // in ms
       this.autoLogout(expirationDuration);
     }
   }
 
   // May need to call this method in places other than just the header component, therefore the navigation will be handled here
   logout() {
-    this.userSubject.next(null);
+    // this.userSubject.next(null);
+    this.store.dispatch(new AuthActions.Logout());
     this.router.navigate(['./auth']);
     localStorage.removeItem('userData');
 
@@ -150,7 +159,7 @@ export class AuthService {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     const user = new User(email, userId, token, expirationDate);
 
-    this.userSubject.next(user);
+    this.store.dispatch(new AuthActions.Login({ email, userId, token, expirationDate }));
     this.autoLogout(expiresIn * 1000); // in ms
 
     localStorage.setItem('userData', JSON.stringify(user));

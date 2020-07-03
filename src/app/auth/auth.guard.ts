@@ -1,3 +1,4 @@
+import { Store } from '@ngrx/store';
 import { Injectable } from '@angular/core';
 import { map, take } from 'rxjs/operators';
 import { AuthService } from './../services/auth.service';
@@ -9,10 +10,11 @@ import {
   Router,
   UrlTree,
 } from '@angular/router';
+import * as fromApp from '../store/app.reducer';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private store: Store<fromApp.AppState>, private router: Router) { }
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -22,8 +24,11 @@ export class AuthGuard implements CanActivate {
     | UrlTree
     | Promise<boolean | UrlTree>
     | Observable<boolean | UrlTree> {
-    return this.authService.userSubject.pipe(
-      take(1), // ensures that only the latest user value is taken and then unsubscribes from the observer for current guard execution
+    return this.store.select('auth').pipe(
+      take(1),
+      map(authState => {
+        return authState.user;
+      }),
       map((user) => {
         const isAuthenticated = user ? true : false;
         if (isAuthenticated) {
