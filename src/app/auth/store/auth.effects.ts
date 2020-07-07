@@ -1,7 +1,8 @@
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Actions, ofType, Effect } from '@ngrx/effects'; // An observable that gives access to all dispatched actions
 import * as AuthActions from './auth.actions';
-import { switchMap, catchError, map } from 'rxjs/operators';
+import { switchMap, catchError, map, tap } from 'rxjs/operators';
 import { SignInEndpoint } from '../../secrets/db-endpoints-store.js';
 import { of } from 'rxjs';
 import { Injectable } from '@angular/core';
@@ -18,8 +19,13 @@ export interface AuthResponseData {
 
 @Injectable()
 export class AuthEffects {
+  constructor(private actions$: Actions, private http: HttpClient, private router: Router) { }
 
-  constructor(private actions$: Actions, private http: HttpClient) { }
+  // dispatch: false => the effect will not yield a dispatchable action at the end
+  @Effect({ dispatch: false })
+  authSuccess = this.actions$.pipe(ofType(AuthActions.LOGIN), tap(() => {
+    this.router.navigate(['/']);
+  }));
 
   @Effect()
   authLogin = this.actions$
@@ -33,23 +39,43 @@ export class AuthEffects {
           password: authData.payload.password,
           returnSecureToken: true,
         }).pipe(
+          // map automatically wraps into observable
           map(resData => {
             const expirationDate = new Date(new Date().getTime() + +resData.expiresIn * 1000);
 
-            return of(
-              new AuthActions.Login({
-                email: resData.email,
-                userId: resData.localId,
-                token: resData.idToken,
-                expirationDate
-              })
-            );
+            return new AuthActions.Login({
+              email: resData.email,
+              userId: resData.localId,
+              token: resData.idToken,
+              expirationDate
+            });
           }),
-          catchError(error => {// catch here in order to make sure that the overall stream does not die
+          catchError(errorResponse => {// catch here in order to make sure that the overall stream does not die
             // should return a non-error observable
+            let errorMessage = 'An unknown error has occurred.';
 
+            if (errorResponse.error && errorResponse.error.error) {
+              switch (errorResponse.error.error.message) {
+                case 'EMAIL_EXISTS':
+                  errorMessage = 'The provided email address is already taken.';
+                  break;
+                case 'INVALID_EMAIL':
+                  errorMessage = 'The provided email address is invalid.';
+                  break;
+                case 'INVALID_PASSWORD':
+                case 'EMAIL_NOT_FOUND':
+                  errorMessage = 'Invalid email or password.';
+                  break;
+                case 'TOO_MANY_ATTEMPTS_TRY_LATER : Too many unsuccessful login attempts. Please try again later.':
+                  errorMessage =
+                    'Too many unsuccessful login attempts.Please try again later.';
+                  break;
+                default:
+                  break;
+              }
+            }
             // return a new observable without error
-            return of();
+            return of(new AuthActions.LoginFail(errorMessage));
           })
         );
       })

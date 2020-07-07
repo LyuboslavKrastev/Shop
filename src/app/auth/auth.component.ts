@@ -9,6 +9,7 @@ import {
   ComponentFactoryResolver,
   ViewChild,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
 import { AlertComponent } from '../common/alert/alert.component';
 import * as fromApp from '../store/app.reducer';
@@ -18,7 +19,7 @@ import * as AuthActions from '../auth/store/auth.actions';
   selector: 'app-auth',
   templateUrl: './auth.component.html',
 })
-export class AuthComponent implements OnDestroy {
+export class AuthComponent implements OnInit, OnDestroy {
   inLoginMode = true;
   isLoading = false;
   errorMessage: string = null;
@@ -32,6 +33,18 @@ export class AuthComponent implements OnDestroy {
     private componentFactoryResolver: ComponentFactoryResolver,
     private store: Store<fromApp.AppState>
   ) { }
+
+  ngOnInit() {
+    this.store.select('auth').subscribe(authState => {
+
+      this.isLoading = authState.loading;
+      this.errorMessage = authState.authError;
+
+      if (this.errorMessage) {
+        this.showErrorAlert(this.errorMessage);
+      }
+    });
+  }
 
   onModeToggle() {
     this.inLoginMode = !this.inLoginMode;
@@ -56,19 +69,6 @@ export class AuthComponent implements OnDestroy {
     } else {
       authObservable = this.authService.signUp(email, password);
     }
-
-    authObservable.subscribe(
-      (responseData) => {
-        console.log(responseData);
-        this.isLoading = false;
-        this.router.navigate(['./recipes']);
-      },
-      (errorMessage) => {
-        this.errorMessage = errorMessage;
-        this.showErrorAlert(errorMessage);
-        this.isLoading = false;
-      }
-    );
 
     form.reset();
   }
