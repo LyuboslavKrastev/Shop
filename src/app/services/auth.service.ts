@@ -96,7 +96,7 @@ export class AuthService {
       // this.userSubject.next(user);
       this.store
         .dispatch(
-          new AuthActions.Login({ email: user.email, userId: user.id, token: user.token, expirationDate })
+          new AuthActions.AuthenticateSuccess({ email: user.email, userId: user.id, token: user.token, expirationDate })
         );
       const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime(); // in ms
       this.autoLogout(expirationDuration);
@@ -159,7 +159,7 @@ export class AuthService {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     const user = new User(email, userId, token, expirationDate);
 
-    this.store.dispatch(new AuthActions.Login({ email, userId, token, expirationDate }));
+    this.store.dispatch(new AuthActions.AuthenticateSuccess({ email, userId, token, expirationDate }));
     this.autoLogout(expiresIn * 1000); // in ms
 
     localStorage.setItem('userData', JSON.stringify(user));

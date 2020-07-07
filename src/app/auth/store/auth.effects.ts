@@ -17,15 +17,82 @@ export interface AuthResponseData {
   registered?: boolean;
 }
 
+const handleAuthentication = (expiresIn: number, email: string, userId: string, token: string) => {
+  const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+
+  return new AuthActions.AuthenticateSuccess({
+    email,
+    userId,
+    token,
+    expirationDate
+  });
+};
+
+const handleError = (errorResponse: any) => {
+  let errorMessage = 'An unknown error has occurred.';
+
+  if (errorResponse.error && errorResponse.error.error) {
+    switch (errorResponse.error.error.message) {
+      case 'EMAIL_EXISTS':
+        errorMessage = 'The provided email address is already taken.';
+        break;
+      case 'INVALID_EMAIL':
+        errorMessage = 'The provided email address is invalid.';
+        break;
+      case 'INVALID_PASSWORD':
+      case 'EMAIL_NOT_FOUND':
+        errorMessage = 'Invalid email or password.';
+        break;
+      case 'TOO_MANY_ATTEMPTS_TRY_LATER : Too many unsuccessful login attempts. Please try again later.':
+        errorMessage =
+          'Too many unsuccessful login attempts.Please try again later.';
+        break;
+      default:
+        break;
+    }
+  }
+  // return a new observable without error
+  return of(new AuthActions.AuthenticateFail(errorMessage));
+};
+
 @Injectable()
 export class AuthEffects {
   constructor(private actions$: Actions, private http: HttpClient, private router: Router) { }
 
   // dispatch: false => the effect will not yield a dispatchable action at the end
   @Effect({ dispatch: false })
-  authSuccess = this.actions$.pipe(ofType(AuthActions.LOGIN), tap(() => {
+  authSuccess = this.actions$.pipe(ofType(AuthActions.AUTHENTICATE_SUCCESS), tap(() => {
     this.router.navigate(['/']);
   }));
+
+  @Effect()
+  authSignup = this.actions$.pipe(
+    ofType(AuthActions.SIGNUP_START),
+    switchMap((signupaAction: AuthActions.SignupStart) => {
+      return this.http
+        .post<AuthResponseData>(SignInEndpoint, {
+          email: signupaAction.payload.email,
+          password: signupaAction.payload.password,
+          returnSecureToken: true,
+        }).pipe(
+          // map automatically wraps into observable
+          map(resData => {
+            const expirationDate = new Date(new Date().getTime() + +resData.expiresIn * 1000);
+
+            return new AuthActions.AuthenticateSuccess({
+              email: resData.email,
+              userId: resData.localId,
+              token: resData.idToken,
+              expirationDate
+            });
+          }),
+          catchError(errorResponse => {// catch here in order to make sure that the overall stream does not die
+            // should return a non-error observable
+            return handleError(errorResponse);
+          })
+        );
+    })
+  );
 
   @Effect()
   authLogin = this.actions$
@@ -41,41 +108,11 @@ export class AuthEffects {
         }).pipe(
           // map automatically wraps into observable
           map(resData => {
-            const expirationDate = new Date(new Date().getTime() + +resData.expiresIn * 1000);
-
-            return new AuthActions.Login({
-              email: resData.email,
-              userId: resData.localId,
-              token: resData.idToken,
-              expirationDate
-            });
+            return handleAuthentication(+resData.expiresIn, resData.email, resData.localId, resData.idToken);
           }),
           catchError(errorResponse => {// catch here in order to make sure that the overall stream does not die
             // should return a non-error observable
-            let errorMessage = 'An unknown error has occurred.';
-
-            if (errorResponse.error && errorResponse.error.error) {
-              switch (errorResponse.error.error.message) {
-                case 'EMAIL_EXISTS':
-                  errorMessage = 'The provided email address is already taken.';
-                  break;
-                case 'INVALID_EMAIL':
-                  errorMessage = 'The provided email address is invalid.';
-                  break;
-                case 'INVALID_PASSWORD':
-                case 'EMAIL_NOT_FOUND':
-                  errorMessage = 'Invalid email or password.';
-                  break;
-                case 'TOO_MANY_ATTEMPTS_TRY_LATER : Too many unsuccessful login attempts. Please try again later.':
-                  errorMessage =
-                    'Too many unsuccessful login attempts.Please try again later.';
-                  break;
-                default:
-                  break;
-              }
-            }
-            // return a new observable without error
-            return of(new AuthActions.LoginFail(errorMessage));
+            return handleError(errorResponse);
           })
         );
       })

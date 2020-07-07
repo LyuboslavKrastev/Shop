@@ -1,8 +1,8 @@
 import { Store } from '@ngrx/store';
 import { PlaceholderDirective } from '../common/placeholder/placeholder.directive';
 import { Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
-import { AuthService, AuthResponseData } from './../services/auth.service';
+import { Subscription } from 'rxjs';
+import { AuthService } from './../services/auth.service';
 import { NgForm } from '@angular/forms';
 import {
   Component,
@@ -56,18 +56,15 @@ export class AuthComponent implements OnInit, OnDestroy {
     }
     const email = form.value.email;
     const password = form.value.password;
-    let authObservable: Observable<AuthResponseData>;
-
-    this.isLoading = true;
 
     if (this.inLoginMode) {
-      // authObservable = this.authService.logIn(email, password);
-      this.store
-        .dispatch(
-          new AuthActions.LoginStart({ email, password })
-        );
+      this.store.dispatch(
+        new AuthActions.LoginStart({ email, password })
+      );
     } else {
-      authObservable = this.authService.signUp(email, password);
+      this.store.dispatch(
+        new AuthActions.SignupStart({ email, password })
+      );
     }
 
     form.reset();
