@@ -1,8 +1,6 @@
 import { Store } from '@ngrx/store';
 import { PlaceholderDirective } from '../common/placeholder/placeholder.directive';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AuthService } from './../services/auth.service';
 import { NgForm } from '@angular/forms';
 import {
   Component,
@@ -26,16 +24,15 @@ export class AuthComponent implements OnInit, OnDestroy {
   @ViewChild(PlaceholderDirective, { static: false })
   alertHolder: PlaceholderDirective;
   private closeSubscription: Subscription;
+  private storeSubscription: Subscription;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
     private componentFactoryResolver: ComponentFactoryResolver,
     private store: Store<fromApp.AppState>
   ) { }
 
   ngOnInit() {
-    this.store.select('auth').subscribe(authState => {
+    this.storeSubscription = this.store.select('auth').subscribe(authState => {
 
       this.isLoading = authState.loading;
       this.errorMessage = authState.authError;
@@ -74,10 +71,13 @@ export class AuthComponent implements OnInit, OnDestroy {
     if (this.closeSubscription) {
       this.closeSubscription.unsubscribe();
     }
+    if (this.storeSubscription) {
+      this.storeSubscription.unsubscribe();
+    }
   }
 
   onHandleError() {
-    this.errorMessage = null;
+    this.store.dispatch(new AuthActions.HandleError());
   }
 
   private showErrorAlert(errorMessage: string) {
