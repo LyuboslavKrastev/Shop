@@ -29,7 +29,8 @@ const handleAuthentication = (expiresIn: number, email: string, userId: string, 
     email,
     userId,
     token,
-    expirationDate
+    expirationDate,
+    redirect: true
   });
 };
 
@@ -68,8 +69,10 @@ export class AuthEffects {
   @Effect({ dispatch: false })
   authRedirect = this.actions$.pipe(
     ofType(AuthActions.AUTHENTICATE_SUCCESS),
-    tap(() => {
-      this.router.navigate(['/']);
+    tap((authSuccessAction: AuthActions.AuthenticateSuccess) => {
+      if (authSuccessAction.payload.redirect) {
+        this.router.navigate(['/']);
+      }
     }));
 
   @Effect()
@@ -106,7 +109,8 @@ export class AuthEffects {
               email: user.email,
               userId: user.id,
               token: user.token,
-              expirationDate
+              expirationDate,
+              redirect: false
             });
         }
 
@@ -144,7 +148,8 @@ export class AuthEffects {
               email: resData.email,
               userId: resData.localId,
               token: resData.idToken,
-              expirationDate
+              expirationDate,
+              redirect: true
             });
           }),
           catchError(errorResponse => {// catch here in order to make sure that the overall stream does not die

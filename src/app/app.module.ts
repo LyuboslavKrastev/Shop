@@ -13,6 +13,7 @@ import { EffectsModule } from '@ngrx/effects';
 import * as fromApp from './store/app.reducer';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { StoreRouterConnectingModule } from '@ngrx/router-store';
+import { RecipesEffects } from './recipes/store/recipe.effects';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,7 @@ import { StoreRouterConnectingModule } from '@ngrx/router-store';
     SharedModule,
     CoreModule,
     StoreModule.forRoot(fromApp.appReducer), // specifies which reducers are involved
-    EffectsModule.forRoot([AuthEffects]),
+    EffectsModule.forRoot([AuthEffects, RecipesEffects]),
     StoreDevtoolsModule.instrument({ logOnly: environment.production }),
     StoreRouterConnectingModule.forRoot(),
   ],
